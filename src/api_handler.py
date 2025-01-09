@@ -102,3 +102,5 @@ def get_yoast_scores(post_title: str) -> str:
         return f"✅ **Yoast SEO Score:** {seo_score}\n✅ **Readability Score:** {readability_score}"
     except Exception as e:
         return f"Error fetching Yoast scores: {str(e)}"
+    
+# @TODO - Get Plugin List: Fetch the list of all plugins in the website.
