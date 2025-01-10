@@ -12,11 +12,13 @@ def detect_intent(message: str) -> str:
     
     elif message.startswith("get plugin list"):
         return "plugin_list"
+    
+    elif message.startswith("export category list"):
+        return "export_categories"    
 
     # ✅ Broader keyword checks for other intents
     site_metadata_keywords = ["site metadata", "site info", "website details"]
     post_metadata_keywords = ["post metadata", "post info", "post details"]
-
 
     if any(keyword in message for keyword in site_metadata_keywords):
         return "fetch_site_metadata"

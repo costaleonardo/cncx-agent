@@ -1,11 +1,14 @@
 import openai
+import urllib.parse
 
 from api_handler import (
     get_site_metadata, 
     get_single_post_metadata, 
     get_yoast_metadata_by_title,
     get_yoast_scores,
-    get_all_plugins
+    get_all_plugins,
+    update_plugin,
+    export_category_list
 )
 from intent_detection import detect_intent
 
@@ -33,6 +36,9 @@ def chat_response(message: str, history: list):
 
     elif intent == "plugin_list":
         response = get_all_plugins()
+
+    elif intent == "export_categories":
+        response = export_category_list()
 
     else:
         try:
