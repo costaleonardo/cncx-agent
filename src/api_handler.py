@@ -107,3 +107,18 @@ def get_yoast_scores(post_title: str) -> str:
         return f"Error fetching Yoast scores: {str(e)}"
     
 # @TODO - Get Plugin List: Fetch the list of all plugins in the website.
+def get_all_plugins() -> str:
+    """Fetch the list of all plugins in the website."""
+    try:
+        endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/plugins"
+        response = requests.get(endpoint, auth=auth)
+        response.raise_for_status()
+        plugins = response.json()
+        if not plugins:
+            return "No plugins found."
+
+        plugin_list = [f"Name: {plugin['name']}, Status: {plugin['status']}" for plugin in plugins]
+        return "\n".join(plugin_list)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error: {e}")
+        return f"Error fetching plugins: {e}"
