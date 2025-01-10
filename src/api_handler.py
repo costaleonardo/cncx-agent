@@ -3,6 +3,7 @@ from requests.auth import HTTPBasicAuth
 import os
 from dotenv import load_dotenv
 import logging
+import openai
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -11,6 +12,8 @@ WP_SITE_URL = os.getenv("WP_SITE_URL")
 USERNAME = os.getenv("USERNAME")
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 auth = HTTPBasicAuth(USERNAME, APP_PASSWORD)
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Get the site's metadata like title and excerpt
 def get_site_metadata() -> str:

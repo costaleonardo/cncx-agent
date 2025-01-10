@@ -1,3 +1,5 @@
+import openai
+
 from api_handler import (
     get_site_metadata, 
     get_single_post_metadata, 
