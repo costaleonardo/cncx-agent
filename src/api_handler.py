@@ -28,7 +28,12 @@ def get_site_metadata() -> str:
             "Name": metadata.get('name', 'N/A'),
             "Description": metadata.get('description', 'N/A'),
             "URL": metadata.get('url', 'N/A'),
-            "Home URL": metadata.get('home', 'N/A')
+            "Home URL": metadata.get('home', 'N/A'),
+            "GMT Offset": metadata.get('gmt_offset', 'N/A'),
+            "Timezone": metadata.get('timezone_string', 'N/A'),
+            "Authentication": metadata.get('authentication', 'N/A'),
+            "Site Icon": metadata.get('site_icon', 'N/A'),
+            "Site Icon URL": metadata.get('site_icon_url', 'N/A')
         }
         return "\n".join([f"{key}: {value}" for key, value in site_info.items()])
     except requests.exceptions.RequestException as e:
