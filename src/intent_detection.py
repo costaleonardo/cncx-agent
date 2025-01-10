@@ -9,6 +9,12 @@ def detect_intent(message: str) -> str:
     # ✅ Detect Yoast metadata fetching (separate from score)
     elif message.startswith("fetch yoast for"):
         return "yoast_metadata"
+    
+    elif message.startswith("get plugin list"):
+        return "plugin_list"
+    
+    elif message.startswith("export category list"):
+        return "export_categories"    
 
     # ✅ Broader keyword checks for other intents
     site_metadata_keywords = ["site metadata", "site info", "website details"]

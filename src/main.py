@@ -3,7 +3,7 @@ from chat_handler import chat_response, clear_chat
 
 def build_interface():
     with gr.Blocks() as iface:
-        gr.Markdown("## CNCX AI Agent with Yoast SEO Management")
+        gr.Markdown("## CNCX Marketing Agent")
         chatbot = gr.Chatbot(label="Chat with CNXC Agent", type="messages")
         msg = gr.Textbox(placeholder="Type your message here...")
         state = gr.State([])

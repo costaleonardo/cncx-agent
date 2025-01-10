@@ -3,6 +3,9 @@ from requests.auth import HTTPBasicAuth
 import os
 from dotenv import load_dotenv
 import logging
+import openai
+import pandas as pd
+from urllib.parse import quote
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -11,6 +14,8 @@ WP_SITE_URL = os.getenv("WP_SITE_URL")
 USERNAME = os.getenv("USERNAME")
 APP_PASSWORD = os.getenv("APP_PASSWORD")
 auth = HTTPBasicAuth(USERNAME, APP_PASSWORD)
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Get the site's metadata like title and excerpt
 def get_site_metadata() -> str:
@@ -62,7 +67,6 @@ def get_single_page_metadata(page_title: str) -> str:
         logging.error(f"Error: {e}")
         return f"Error fetching page metadata: {e}"
 
-# First commit!s
 def get_post_id_by_title(post_title: str) -> int:
     """Retrieve a post ID by title."""
     endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts?search={post_title}"
@@ -103,4 +107,49 @@ def get_yoast_scores(post_title: str) -> str:
     except Exception as e:
         return f"Error fetching Yoast scores: {str(e)}"
     
-# @TODO - Get Plugin List: Fetch the list of all plugins in the website.
+def get_all_plugins() -> str:
+    """Fetch the list of all plugins in the website."""
+    try:
+        endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/plugins"
+        response = requests.get(endpoint, auth=auth)
+        response.raise_for_status()
+        plugins = response.json()
+        if not plugins:
+            return "No plugins found."
+
+        plugin_list = [f"Name: {plugin['name']}, Status: {plugin['status']}" for plugin in plugins]
+        return "\n".join(plugin_list)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error: {e}")
+        return f"Error fetching plugins: {e}"
+    
+def update_plugin(plugin_slug: str) -> str:
+    """Update a specific plugin by slug."""
+    try:
+        endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/plugins/{plugin_slug}"
+        response = requests.post(endpoint, auth=auth)
+        response.raise_for_status()
+        return f"Plugin '{plugin_slug}' updated successfully."
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error: {e}")
+        return f"Error updating plugin '{plugin_slug}': {e}"
+    
+def export_category_list() -> str:
+    """List up to 10 site categories."""
+    api_url = f"{WP_SITE_URL}/wp-json/wp/v2/categories"
+    per_page = 10  # Limit to 10 categories
+
+    try:
+        response = requests.get(api_url, params={'per_page': per_page}, auth=auth)
+        response.raise_for_status()
+        categories = response.json()
+
+        # Create a list of category names
+        category_list = [f"ID: {category['id']}, Name: {category['name']}" for category in categories]
+        return "\n".join(category_list)
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error: {e}")
+        return f"Error fetching categories: {e}"
+    except requests.exceptions.JSONDecodeError as e:
+        logging.error(f"JSON decode error: {e}")
+        return f"JSON decode error: {e}"

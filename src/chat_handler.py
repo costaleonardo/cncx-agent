@@ -1,8 +1,14 @@
+import openai
+import urllib.parse
+
 from api_handler import (
     get_site_metadata, 
     get_single_post_metadata, 
     get_yoast_metadata_by_title,
-    get_yoast_scores
+    get_yoast_scores,
+    get_all_plugins,
+    update_plugin,
+    export_category_list
 )
 from intent_detection import detect_intent
 
@@ -27,6 +33,12 @@ def chat_response(message: str, history: list):
     elif intent == "yoast_metadata":
         post_title = extract_title("fetch yoast for", message)
         response = get_yoast_metadata_by_title(post_title) if post_title else "Error: Please specify a valid post title."
+
+    elif intent == "plugin_list":
+        response = get_all_plugins()
+
+    elif intent == "export_categories":
+        response = export_category_list()
 
     else:
         try:
