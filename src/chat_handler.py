@@ -1,5 +1,6 @@
 import openai
 import urllib.parse
+from agent_details import agent_details
 
 from api_handler import (
     get_site_metadata, 
@@ -45,7 +46,10 @@ def chat_response(message: str, history: list):
             openai_response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a helpful WordPress assistant."},
+                    {
+                        "role": "system", 
+                        "content": agent_details
+                    },
                     {"role": "user", "content": message}
                 ]
             )
