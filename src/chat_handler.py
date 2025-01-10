@@ -27,7 +27,7 @@ def chat_response(message: str, history: list):
         response = "Please provide the post title to fetch post metadata."
 
     elif intent == "fetch_yoast_score":
-        post_title = extract_title("fetch yoast score for", message)
+        post_title = extract_title("what is the yoast score for", message)
         response = get_yoast_scores(post_title) if post_title else "Error: Please specify a valid post title."
 
     elif intent == "yoast_metadata":

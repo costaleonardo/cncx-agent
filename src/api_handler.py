@@ -74,13 +74,19 @@ def get_single_page_metadata(page_title: str) -> str:
 
 def get_post_id_by_title(post_title: str) -> int:
     """Retrieve a post ID by title."""
-    endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts?search={post_title}"
+    endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts?search={quote(post_title)}"
     response = requests.get(endpoint, auth=auth)
     response.raise_for_status()
     posts = response.json()
     if not posts:
         raise ValueError(f"No post found with the title '{post_title}'.")
-    return posts[0]['id']
+
+    # Convert both the search query and the post titles to lowercase for comparison
+    for post in posts:
+        if post['title']['rendered'].lower() == post_title.lower():
+            return post['id']
+    
+    raise ValueError(f"No post found with the title '{post_title}'.")
 
 def get_yoast_metadata_by_title(post_title: str) -> dict:
     """Fetch Yoast SEO metadata for a post using the title."""
@@ -98,6 +104,7 @@ def get_yoast_metadata_by_title(post_title: str) -> dict:
 def get_yoast_scores(post_title: str) -> str:
     """Fetch Yoast SEO and Readability scores for a given post."""
     try:
+        logging.info(f"Fetching Yoast scores for post title: '{post_title}'")
         post_id = get_post_id_by_title(post_title)
         endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts/{post_id}"
         response = requests.get(endpoint, auth=auth)
@@ -110,6 +117,7 @@ def get_yoast_scores(post_title: str) -> str:
         
         return f"✅ **Yoast SEO Score:** {seo_score}\n✅ **Readability Score:** {readability_score}"
     except Exception as e:
+        logging.error(f"Error fetching Yoast scores: {str(e)}")
         return f"Error fetching Yoast scores: {str(e)}"
     
 def get_all_plugins() -> str:
