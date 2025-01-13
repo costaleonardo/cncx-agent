@@ -28,7 +28,12 @@ def get_site_metadata() -> str:
             "Name": metadata.get('name', 'N/A'),
             "Description": metadata.get('description', 'N/A'),
             "URL": metadata.get('url', 'N/A'),
-            "Home URL": metadata.get('home', 'N/A')
+            "Home URL": metadata.get('home', 'N/A'),
+            "GMT Offset": metadata.get('gmt_offset', 'N/A'),
+            "Timezone": metadata.get('timezone_string', 'N/A'),
+            "Authentication": metadata.get('authentication', 'N/A'),
+            "Site Icon": metadata.get('site_icon', 'N/A'),
+            "Site Icon URL": metadata.get('site_icon_url', 'N/A')
         }
         return "\n".join([f"{key}: {value}" for key, value in site_info.items()])
     except requests.exceptions.RequestException as e:
@@ -69,13 +74,19 @@ def get_single_page_metadata(page_title: str) -> str:
 
 def get_post_id_by_title(post_title: str) -> int:
     """Retrieve a post ID by title."""
-    endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts?search={post_title}"
+    endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts?search={quote(post_title)}"
     response = requests.get(endpoint, auth=auth)
     response.raise_for_status()
     posts = response.json()
     if not posts:
         raise ValueError(f"No post found with the title '{post_title}'.")
-    return posts[0]['id']
+
+    # Convert both the search query and the post titles to lowercase for comparison
+    for post in posts:
+        if post['title']['rendered'].lower() == post_title.lower():
+            return post['id']
+    
+    raise ValueError(f"No post found with the title '{post_title}'.")
 
 def get_yoast_metadata_by_title(post_title: str) -> dict:
     """Fetch Yoast SEO metadata for a post using the title."""
@@ -93,6 +104,7 @@ def get_yoast_metadata_by_title(post_title: str) -> dict:
 def get_yoast_scores(post_title: str) -> str:
     """Fetch Yoast SEO and Readability scores for a given post."""
     try:
+        logging.info(f"Fetching Yoast scores for post title: '{post_title}'")
         post_id = get_post_id_by_title(post_title)
         endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts/{post_id}"
         response = requests.get(endpoint, auth=auth)
@@ -105,6 +117,7 @@ def get_yoast_scores(post_title: str) -> str:
         
         return f"✅ **Yoast SEO Score:** {seo_score}\n✅ **Readability Score:** {readability_score}"
     except Exception as e:
+        logging.error(f"Error fetching Yoast scores: {str(e)}")
         return f"Error fetching Yoast scores: {str(e)}"
     
 def get_all_plugins() -> str:
@@ -134,22 +147,23 @@ def update_plugin(plugin_slug: str) -> str:
         logging.error(f"Error: {e}")
         return f"Error updating plugin '{plugin_slug}': {e}"
     
-def export_category_list() -> str:
-    """List up to 10 site categories."""
-    api_url = f"{WP_SITE_URL}/wp-json/wp/v2/categories"
-    per_page = 10  # Limit to 10 categories
-
+# @TODO - Create a post
+def create_post(title: str, content: str, status: str = 'draft') -> str:
+    """Create a new WordPress post."""
     try:
-        response = requests.get(api_url, params={'per_page': per_page}, auth=auth)
+        endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts"
+        post_data = {
+            'title': title,
+            'content': content,
+            'status': status
+        }
+        response = requests.post(endpoint, json=post_data, auth=auth)
         response.raise_for_status()
-        categories = response.json()
 
-        # Create a list of category names
-        category_list = [f"ID: {category['id']}, Name: {category['name']}" for category in categories]
-        return "\n".join(category_list)
+        print(response)
+        post = response.json()
+
+        return f"Post '{title}' created successfully with ID: {post['id']}"
     except requests.exceptions.RequestException as e:
         logging.error(f"Error: {e}")
-        return f"Error fetching categories: {e}"
-    except requests.exceptions.JSONDecodeError as e:
-        logging.error(f"JSON decode error: {e}")
-        return f"JSON decode error: {e}"
+        return f"Error creating post '{title}': {e}"
