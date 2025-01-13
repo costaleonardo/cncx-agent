@@ -1,5 +1,6 @@
 import openai
 import urllib.parse
+from agent_details import agent_details
 
 from api_handler import (
     get_site_metadata, 
@@ -8,7 +9,7 @@ from api_handler import (
     get_yoast_scores,
     get_all_plugins,
     update_plugin,
-    export_category_list
+    create_post
 )
 from intent_detection import detect_intent
 
@@ -27,7 +28,7 @@ def chat_response(message: str, history: list):
         response = "Please provide the post title to fetch post metadata."
 
     elif intent == "fetch_yoast_score":
-        post_title = extract_title("fetch yoast score for", message)
+        post_title = extract_title("what is the yoast score for", message)
         response = get_yoast_scores(post_title) if post_title else "Error: Please specify a valid post title."
 
     elif intent == "yoast_metadata":
@@ -37,15 +38,25 @@ def chat_response(message: str, history: list):
     elif intent == "plugin_list":
         response = get_all_plugins()
 
-    elif intent == "export_categories":
-        response = export_category_list()
+    elif intent == "create_post":
+        post_title = extract_title("create a post titled", message)
+        post_content = message.split("with content", 1)[-1].strip() if "with content" in message else ""
+        
+        if post_title and post_content:
+            response = create_post(post_title, post_content)
+        else:
+            response = "Error: Please specify both a valid post title and content."
+        response = create_post(post_title, post_content, status="draft");        
 
     else:
         try:
             openai_response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a helpful WordPress assistant."},
+                    {
+                        "role": "system", 
+                        "content": agent_details
+                    },
                     {"role": "user", "content": message}
                 ]
             )

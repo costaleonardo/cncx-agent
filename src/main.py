@@ -9,7 +9,11 @@ def build_interface():
         state = gr.State([])
 
         # Bind Chat Interaction
-        msg.submit(chat_response, [msg, state], [chatbot, state])
+        def chat_response_and_clear(message, state):
+            response, new_state = chat_response(message, state)
+            return response, new_state, gr.update(value='')
+
+        msg.submit(chat_response_and_clear, [msg, state], [chatbot, state, msg])
         gr.Button("Clear Chat").click(clear_chat, inputs=[], outputs=[chatbot, state])
 
     return iface
