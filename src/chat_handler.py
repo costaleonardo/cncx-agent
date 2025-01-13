@@ -1,6 +1,9 @@
 import openai
 import urllib.parse
+import os
 from agent_details import agent_details
+from langchain.chains import ConversationChain
+from langchain.llms import OpenAI
 
 from api_handler import (
     get_site_metadata, 
@@ -12,6 +15,10 @@ from api_handler import (
     create_post
 )
 from intent_detection import detect_intent
+
+# Initialize LangChain
+llm = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+conversation = ConversationChain(llm=llm)
 
 def chat_response(message: str, history: list):
     """Chat Handling with Correct Post Title Extraction for Yoast SEO and Scores."""
@@ -50,17 +57,8 @@ def chat_response(message: str, history: list):
 
     else:
         try:
-            openai_response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {
-                        "role": "system", 
-                        "content": agent_details
-                    },
-                    {"role": "user", "content": message}
-                ]
-            )
-            response = openai_response['choices'][0]['message']['content'].strip()
+            # Use LangChain for conversation handling
+            response = conversation.predict(input=message)
         except Exception as e:
             response = f"Error with OpenAI API: {str(e)}"
 
