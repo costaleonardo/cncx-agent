@@ -147,22 +147,23 @@ def update_plugin(plugin_slug: str) -> str:
         logging.error(f"Error: {e}")
         return f"Error updating plugin '{plugin_slug}': {e}"
     
-def export_category_list() -> str:
-    """List up to 10 site categories."""
-    api_url = f"{WP_SITE_URL}/wp-json/wp/v2/categories"
-    per_page = 10  # Limit to 10 categories
-
+# @TODO - Create a post
+def create_post(title: str, content: str, status: str = 'draft') -> str:
+    """Create a new WordPress post."""
     try:
-        response = requests.get(api_url, params={'per_page': per_page}, auth=auth)
+        endpoint = f"{WP_SITE_URL}/wp-json/wp/v2/posts"
+        post_data = {
+            'title': title,
+            'content': content,
+            'status': status
+        }
+        response = requests.post(endpoint, json=post_data, auth=auth)
         response.raise_for_status()
-        categories = response.json()
 
-        # Create a list of category names
-        category_list = [f"ID: {category['id']}, Name: {category['name']}" for category in categories]
-        return "\n".join(category_list)
+        print(response)
+        post = response.json()
+
+        return f"Post '{title}' created successfully with ID: {post['id']}"
     except requests.exceptions.RequestException as e:
         logging.error(f"Error: {e}")
-        return f"Error fetching categories: {e}"
-    except requests.exceptions.JSONDecodeError as e:
-        logging.error(f"JSON decode error: {e}")
-        return f"JSON decode error: {e}"
+        return f"Error creating post '{title}': {e}"

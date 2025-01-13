@@ -20,6 +20,7 @@ def detect_intent(message: str) -> str:
     site_metadata_keywords = ["site information", "site metadata", "site info", "website details"]
     post_metadata_keywords = ["post metadata", "post info", "post details"]
     yoast_score_keywords = ["fetch yoast score for", "yoast score", "what is yoast score"]
+    create_post_keywords = ["create a post"]
 
     if any(keyword in message for keyword in site_metadata_keywords):
         return "fetch_site_metadata"
@@ -29,6 +30,9 @@ def detect_intent(message: str) -> str:
     
     elif any(keyword in message for keyword in yoast_score_keywords):
         return "fetch_yoast_score"
+    
+    elif any(keyword in message for keyword in create_post_keywords):
+        return "create_post"    
 
     # ✅ Default fallback for unmatched intents
     return "general"
